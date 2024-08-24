@@ -11,10 +11,10 @@ unsigned long long data;
 
 uint8_t canData[8];
 struct Motor_RPMs{
-  uint16_t frontLeft;
-  uint16_t frontRight;
-  uint16_t rearLeft;
-  uint16_t rearRight;
+  int16_t frontLeft;
+  int16_t frontRight;
+  int16_t rearLeft;
+  int16_t rearRight;
 };
 
 unsigned long long combineMotorRPMs(Motor_RPMs RPMs) {
@@ -68,7 +68,7 @@ void loop() {
   //int left_y = PS4.LStickY();
 
   Motor_RPMs RPMs = calculateWheelRPMs(right_x,right_y,left_x);
-  
+  //Motor_RPMs RPMs = calculateWheelRPMs(0,0,0);
   data = combineMotorRPMs(RPMs);
 
   Serial.printf("FL::%d\r\n",int(RPMs.frontLeft));
@@ -85,7 +85,7 @@ void loop() {
     canData[i] = (data >> (56 - i * 8)) & 0xFF;
   }
   for (int i = 0; i < 8; i +=2) {
-    Serial.printf("%02X%02x ", canData[i],canData[i+1]);
+    Serial.printf("%02X%02X ", canData[i],canData[i+1]);
   }
     Serial.println();
   */
