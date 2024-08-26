@@ -44,7 +44,11 @@ void setup() {
   Serial.begin(115200);
   if (!CAN.begin(1000E3)) {
     Serial.println("ERROR:Starting CAN failed!");
+    CAN.beginPacket(ID);
+    CAN.write(0, 1);  
+    CAN.endPacket();  
     while (1);
+    delay(1);
   }
   
   PS4.begin("48:e7:29:a3:c5:0c");
