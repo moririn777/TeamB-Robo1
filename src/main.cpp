@@ -9,7 +9,7 @@ const int dead_zone = 30;
 unsigned int ID = 0x555; //ID
 unsigned long long data;
 
-uint8_t canData[8];
+uint8_t TxData[8];
 
 struct Motor_RPMs{
   uint16_t frontLeft;
@@ -19,7 +19,7 @@ struct Motor_RPMs{
 };
 
 unsigned long long combineMotorRPMs(Motor_RPMs RPMs) {
-    unsigned long long  RPMdata = 0;
+    unsigned long long  RPMdata;
     
     // 各モーターの RPM 値をシフトして結合（16ビットに制限）
     RPMdata |= ((unsigned long long)((uint16_t)RPMs.frontLeft) << 48);
@@ -71,8 +71,8 @@ void loop() {
   if(abs(left_x) < dead_zone && abs(left_y) < dead_zone && abs(right_x)<dead_zone){
     data = 0;
   } else{
-    RPMs = calculateWheelRPMs(left_x,left_y,right_x);
-    data = combineMotorRPMs(RPMs);
+    RPMs = calculateWheelRPMs(left_x,left_y,right_x); //メカナムの各モーターのＲＰＭを計算
+    data = combineMotorRPMs(RPMs); //64bitのデータを取得
   }
 
   Serial.printf("data: 0x%016llX\n", data);
@@ -82,11 +82,11 @@ void loop() {
   Serial.printf("RR::%X\r\n",uint16_t(RPMs.rearRight));
   
   for (int i = 0; i < 8; i++) {
-    canData[i] = (data >> (56 - i * 8)) & 0xFF;
+    TxData[i] = (data >> (56 - i * 8)) & 0xFF; //64bitのデータを8bitに分割する
   }
 
   CAN.beginPacket(ID);
-  CAN.write(canData, sizeof(canData));  
+  CAN.write(TxData, sizeof(TxData));  
   CAN.endPacket();  
   
   delay(10);
