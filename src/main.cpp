@@ -18,7 +18,7 @@ bool launchFlag;
 const uint ID = 0x555; // ID
 unsigned long long data;
 
-uint8_t canData[8];
+uint8_t TxData[8];
 
 struct Motor_RPMs {
   uint16_t frontLeft;
@@ -83,9 +83,9 @@ void loop() {
   if (abs(left_x) < DEAD_ZONE && abs(left_y) < DEAD_ZONE &&
       abs(right_x) < DEAD_ZONE) {
     data = 0;
-  } else {
-    RPMs = calculateWheelRPMs(left_x, left_y, right_x);
-    data = combineMotorRPMs(RPMs);
+  } else{
+    RPMs = calculateWheelRPMs(left_x,left_y,right_x); //メカナムの各モーターのＲＰＭを計算
+    data = combineMotorRPMs(RPMs); //64bitのデータを取得
   }
 
   if (PS4.Circle()) {
@@ -107,12 +107,12 @@ void loop() {
   Serial.printf("RR::%X\r\n", uint16_t(RPMs.rearRight));
 
   for (int i = 0; i < 8; i++) {
-    canData[i] = (data >> (56 - i * 8)) & 0xFF;
+    TxData[i] = (data >> (56 - i * 8)) & 0xFF; //64bitのデータを8bitに分割する
   }
 
   CAN.beginPacket(ID);
-  CAN.write(canData, sizeof(canData));
-  CAN.endPacket();
-
+  CAN.write(TxData, sizeof(TxData));  
+  CAN.endPacket();  
+  
   delay(10);
 }
