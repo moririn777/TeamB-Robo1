@@ -1,15 +1,20 @@
 #include <Arduino.h>
 #include <CAN.h>
+#include <ESP32Servo.h>
 #include <PS4Controller.h>
 
 const int WHEELBASE_X = 1;
 const int WHEELBASE_Y = 1;
-const int DEADZONE = 30;
+const int DEAD_ZONE = 30;
 
 const unsigned int ID = 0x555; // ID
 unsigned long long data;
 
 uint8_t canData[8];
+
+const uint8_t LAUNCHING_SERVO_PIN = 32;
+Servo launchingServo;
+bool launchFlag;
 
 struct Motor_RPMs {
   uint16_t frontLeft;
@@ -41,13 +46,14 @@ Motor_RPMs calculateWheelRPMs(int x, int y, int rotation) { // メカナムの�
 }
 
 void setup() {
+  launchingServo.attach(LAUNCHING_SERVO_PIN);
+  launchingServo.write(0);
+  launchFlag = 0; // サーボのロック状態
+
   Serial.begin(115200);
   if (!CAN.begin(1000E3)) {
     Serial.println("ERROR:Starting CAN failed!");
-    while (1)
-      ;
   }
-
   PS4.begin("08:B6:1F:ED:5E:34");
 }
 
@@ -58,6 +64,16 @@ void loop() {
     return;
   }
 
+  if (PS4.Circle()) {
+    if (!launchFlag) {
+      launchingServo.write(90);
+    } else {
+      launchingServo.write(0);
+    }
+    launchFlag = !launchFlag;
+    delay(25);
+  }
+
   int left_x = PS4.LStickX();
   int left_y = PS4.LStickY();
   int right_x = PS4.RStickX();
@@ -65,8 +81,8 @@ void loop() {
 
   Motor_RPMs RPMs;
 
-  if (abs(left_x) < DEADZONE && abs(left_y) < DEADZONE &&
-      abs(right_x) < DEADZONE) {
+  if (abs(left_x) < DEAD_ZONE && abs(left_y) < DEAD_ZONE &&
+      abs(right_x) < DEAD_ZONE) {
     data = 0;
   } else {
     RPMs = calculateWheelRPMs(left_x, left_y, right_x);
