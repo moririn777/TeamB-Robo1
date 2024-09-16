@@ -1,24 +1,15 @@
 #include <Arduino.h>
 #include <CAN.h>
-#include <ESP32Servo.h>
 #include <PS4Controller.h>
 
 const int WHEELBASE_X = 1;
 const int WHEELBASE_Y = 1;
-const int DEAD_ZONE = 30;
+const int DEADZONE = 30;
 
-const uint8_t SERVO1_PIN = 32;
-
-const int8_t SET_DEGREE = 0;   // 初期位置 ストッパー
-const int8_t TAKE_DEGREE = 80; // 発射
-
-Servo launchingServo;
-bool launchFlag;
-
-const uint ID = 0x555; // ID
+const unsigned int ID = 0x555; // ID
 unsigned long long data;
 
-uint8_t TxData[8];
+uint8_t canData[8];
 
 struct Motor_RPMs {
   uint16_t frontLeft;
@@ -50,24 +41,18 @@ Motor_RPMs calculateWheelRPMs(int x, int y, int rotation) { // メカナムの�
 }
 
 void setup() {
-  launchingServo.attach(SERVO1_PIN);
-  launchingServo.write(SET_DEGREE);
-  launchFlag = 0;
-
   Serial.begin(115200);
   if (!CAN.begin(1000E3)) {
     Serial.println("ERROR:Starting CAN failed!");
-    CAN.beginPacket(ID);
-    CAN.write(0, 1);
-    CAN.endPacket();
     while (1)
       ;
-    delay(1);
   }
+
   PS4.begin("08:B6:1F:ED:5E:34");
 }
 
 void loop() {
+
   if (!PS4.isConnected()) {
     Serial.println("ERROR:Cant PS4Connect!!");
     return;
@@ -80,24 +65,12 @@ void loop() {
 
   Motor_RPMs RPMs;
 
-  if (abs(left_x) < DEAD_ZONE && abs(left_y) < DEAD_ZONE &&
-      abs(right_x) < DEAD_ZONE) {
+  if (abs(left_x) < DEADZONE && abs(left_y) < DEADZONE &&
+      abs(right_x) < DEADZONE) {
     data = 0;
-  } else{
-    RPMs = calculateWheelRPMs(left_x,left_y,right_x); //メカナムの各モーターのＲＰＭを計算
-    data = combineMotorRPMs(RPMs); //64bitのデータを取得
-  }
-
-  if (PS4.Circle()) {
-    if (!launchFlag) {
-      launchingServo.write(TAKE_DEGREE);
-      delay(10);
-    } else {
-      launchFlag=!launchFlag;
-      launchingServo.write(SET_DEGREE);
-      delay(10);
-    }
-    launchFlag=!launchFlag;
+  } else {
+    RPMs = calculateWheelRPMs(left_x, left_y, right_x);
+    data = combineMotorRPMs(RPMs);
   }
 
   Serial.printf("data: 0x%016llX\n", data);
@@ -107,12 +80,12 @@ void loop() {
   Serial.printf("RR::%X\r\n", uint16_t(RPMs.rearRight));
 
   for (int i = 0; i < 8; i++) {
-    TxData[i] = (data >> (56 - i * 8)) & 0xFF; //64bitのデータを8bitに分割する
+    canData[i] = (data >> (56 - i * 8)) & 0xFF;
   }
 
   CAN.beginPacket(ID);
-  CAN.write(TxData, sizeof(TxData));  
-  CAN.endPacket();  
-  
+  CAN.write(canData, sizeof(canData));
+  CAN.endPacket();
+
   delay(10);
 }
