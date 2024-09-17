@@ -12,10 +12,10 @@ unsigned long long data;
 uint8_t canData[8];
 
 struct Motor_RPMs {
-  uint16_t frontLeft;
-  uint16_t frontRight;
-  uint16_t rearLeft;
-  uint16_t rearRight;
+  int16_t frontLeft;
+  int16_t frontRight;
+  int16_t rearLeft;
+  int16_t rearRight;
 };
 
 unsigned long long combineMotorRPMs(Motor_RPMs RPMs) {
