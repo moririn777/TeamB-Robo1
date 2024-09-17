@@ -16,6 +16,10 @@ const uint8_t LAUNCHING_SERVO_PIN = 32;
 Servo launchingServo;
 bool launchFlag;
 
+const int SET_DEGREE = 0;      // 装填角度
+const int LAUNCH_DEGREE = 45;  // 発射角度
+const int DEBOUNCE_DELAY = 50; // チャタリング防止
+
 struct Motor_RPMs {
   uint16_t frontLeft;
   uint16_t frontRight;
@@ -63,15 +67,22 @@ void loop() {
     Serial.println("ERROR:Cant PS4Connect!!");
     return;
   }
+  static bool circle_pressed = false;
+  static unsigned long circle_debounce_time = 0;
 
   if (PS4.Circle()) {
-    if (!launchFlag) {
-      launchingServo.write(90);
-    } else {
-      launchingServo.write(0);
+    if (!circle_pressed && millis() - circle_debounce_time > DEBOUNCE_DELAY) {
+      if (!launchFlag) {
+        launchingServo.write(LAUNCH_DEGREE);
+      } else {
+        launchingServo.write(SET_DEGREE);
+      }
+      launchFlag = !launchFlag;
+      circle_debounce_time = millis();
     }
-    launchFlag = !launchFlag;
-    delay(25);
+    circle_pressed = true;
+  } else {
+    circle_pressed = false;
   }
 
   int left_x = PS4.LStickX();
