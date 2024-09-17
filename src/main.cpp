@@ -4,7 +4,7 @@
 
 const int WHEELBASE_X = 1;
 const int WHEELBASE_Y = 1;
-const int DEADZONE = 30;
+const int DEAD_ZONE = 30;
 
 const unsigned int ID = 0x555; // ID
 unsigned long long data;
@@ -62,18 +62,23 @@ void loop() {
   int left_y = PS4.LStickY();
   int right_x = PS4.RStickX();
   // int left_y = PS4.LStickY();
+  
+  if (abs(left_x) < DEAD_ZONE) {
+    left_x = 0;
+  }
+  if (abs(left_y) < DEAD_ZONE) {
+    left_y = 0;
+  }
+  if (abs(right_x) < DEAD_ZONE) {
+    right_x = 0;
+  }
 
   Motor_RPMs RPMs;
 
-  if (abs(left_x) < DEADZONE && abs(left_y) < DEADZONE &&
-      abs(right_x) < DEADZONE) {
-    data = 0;
-  } else {
-    RPMs = calculateWheelRPMs(left_x, left_y, right_x);
-    data = combineMotorRPMs(RPMs);
-  }
+  RPMs = calculateWheelRPMs(left_x, left_y, right_x);
+  data = combineMotorRPMs(RPMs);
 
-  Serial.printf("data: 0x%016llX\n", data);
+  Serial.printf("data: 0x%016llX\r\n", data);
   Serial.printf("FL::%x\r\n", uint16_t(RPMs.frontLeft));
   Serial.printf("FR::%X\r\n", uint16_t(RPMs.frontRight));
   Serial.printf("RL::%X\r\n", uint16_t(RPMs.rearLeft));
