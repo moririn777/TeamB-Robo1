@@ -11,13 +11,15 @@ unsigned long long data;
 
 uint8_t canData[8];
 
-struct Motor_RPMs {
-  uint16_t frontLeft;
-  uint16_t frontRight;
-  uint16_t rearLeft;
-  uint16_t rearRight;
+class MotorRPMs {
+public:
+  int16_t frontLeft;
+  int16_t frontRight;
+  int16_t rearLeft;
+  int16_t rearRight;
 
-  void initialize(){
+  // 初期値を強制的に代入
+  MotorRPMs() {
     frontLeft = 0;
     frontRight = 0;
     rearLeft = 0;
@@ -25,7 +27,8 @@ struct Motor_RPMs {
   }
 };
 
-  unsigned long long combineMotorRPMs(Motor_RPMs RPMs) {
+
+  unsigned long long combineMotorRPMs(MotorRPMs RPMs) {
   unsigned long long RPMdata = 0;
 
   // 各モーターの RPM 値をシフトして結合（16ビットに制限）
@@ -37,8 +40,8 @@ struct Motor_RPMs {
   return RPMdata;
 }
 
-Motor_RPMs calculateWheelRPMs(int x, int y, int rotation) { // メカナムの計算
-  Motor_RPMs RPMs;
+MotorRPMs calculateWheelRPMs(int x, int y, int rotation) { // メカナムの計算
+  MotorRPMs RPMs;
 
   RPMs.frontLeft = (int16_t)(-x + y + (WHEELBASE_X + WHEELBASE_Y) * rotation);
   RPMs.frontRight = (int16_t)(x + y + (WHEELBASE_X + WHEELBASE_Y) * rotation);
@@ -70,8 +73,7 @@ void loop() {
   int right_x = PS4.RStickX();
   // int left_y = PS4.LStickY();
 
-  Motor_RPMs RPMs;
-  RPMs.initialize();
+  MotorRPMs RPMs;
   
   if (abs(left_x) < DEADZONE && abs(left_y) < DEADZONE &&
       abs(right_x) < DEADZONE) {
