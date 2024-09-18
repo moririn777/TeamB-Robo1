@@ -16,9 +16,16 @@ struct Motor_RPMs {
   uint16_t frontRight;
   uint16_t rearLeft;
   uint16_t rearRight;
+
+  void initialize(){
+    frontLeft = 0;
+    frontRight = 0;
+    rearLeft = 0;
+    rearRight = 0;
+  }
 };
 
-unsigned long long combineMotorRPMs(Motor_RPMs RPMs) {
+  unsigned long long combineMotorRPMs(Motor_RPMs RPMs) {
   unsigned long long RPMdata = 0;
 
   // 各モーターの RPM 値をシフトして結合（16ビットに制限）
@@ -64,7 +71,8 @@ void loop() {
   // int left_y = PS4.LStickY();
 
   Motor_RPMs RPMs;
-
+  RPMs.initialize();
+  
   if (abs(left_x) < DEADZONE && abs(left_y) < DEADZONE &&
       abs(right_x) < DEADZONE) {
     data = 0;
