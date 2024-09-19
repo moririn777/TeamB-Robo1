@@ -21,10 +21,10 @@ const int LAUNCH_DEGREE = 45;  // 発射角度
 const int DEBOUNCE_DELAY = 50; // チャタリング防止
 
 struct Motor_RPMs {
-  uint16_t frontLeft;
-  uint16_t frontRight;
-  uint16_t rearLeft;
-  uint16_t rearRight;
+  int16_t frontLeft;
+  int16_t frontRight;
+  int16_t rearLeft;
+  int16_t rearRight;
 };
 
 unsigned long long combineMotorRPMs(Motor_RPMs RPMs) {
@@ -89,18 +89,23 @@ void loop() {
   int left_y = PS4.LStickY();
   int right_x = PS4.RStickX();
   // int left_y = PS4.LStickY();
-
-  Motor_RPMs RPMs;
-
-  if (abs(left_x) < DEAD_ZONE && abs(left_y) < DEAD_ZONE &&
-      abs(right_x) < DEAD_ZONE) {
-    data = 0;
-  } else {
-    RPMs = calculateWheelRPMs(left_x, left_y, right_x);
-    data = combineMotorRPMs(RPMs);
+  
+  if (abs(left_x) < DEAD_ZONE) {
+    left_x = 0;
+  }
+  if (abs(left_y) < DEAD_ZONE) {
+    left_y = 0;
+  }
+  if (abs(right_x) < DEAD_ZONE) {
+    right_x = 0;
   }
 
-  Serial.printf("data: 0x%016llX\n", data);
+  Motor_RPMs RPMs;
+  
+  RPMs = calculateWheelRPMs(left_x, left_y, right_x);
+  data = combineMotorRPMs(RPMs);
+
+  Serial.printf("data: 0x%016llX\r\n", data);
   Serial.printf("FL::%x\r\n", uint16_t(RPMs.frontLeft));
   Serial.printf("FR::%X\r\n", uint16_t(RPMs.frontRight));
   Serial.printf("RL::%X\r\n", uint16_t(RPMs.rearLeft));
@@ -113,6 +118,4 @@ void loop() {
   CAN.beginPacket(ID);
   CAN.write(canData, sizeof(canData));
   CAN.endPacket();
-
-  delay(10);
 }
