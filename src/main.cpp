@@ -14,7 +14,7 @@ uint8_t canData[8];
 
 const uint8_t LAUNCHING_SERVO_PIN = 32;
 Servo launchingServo;
-bool launchFlag;
+bool launch_flag;
 
 const int SET_DEGREE = 0;      // 装填角度
 const int LAUNCH_DEGREE = 45;  // 発射角度
@@ -52,7 +52,7 @@ Motor_RPMs calculateWheelRPMs(int x, int y, int rotation) { // メカナムの�
 void setup() {
   launchingServo.attach(LAUNCHING_SERVO_PIN);
   launchingServo.write(0);
-  launchFlag = 0; // サーボのロック状態
+  launch_flag = false; // サーボのロック状態
 
   Serial.begin(115200);
   if (!CAN.begin(1000E3)) {
@@ -72,12 +72,12 @@ void loop() {
 
   if (PS4.Circle()) {
     if (!circle_pressed && millis() - circle_debounce_time > DEBOUNCE_DELAY) {
-      if (!launchFlag) {
+      if (!launch_flag) {
         launchingServo.write(LAUNCH_DEGREE);
       } else {
         launchingServo.write(SET_DEGREE);
       }
-      launchFlag = !launchFlag;
+      launch_flag = !launch_flag;
       circle_debounce_time = millis();
     }
     circle_pressed = true;
