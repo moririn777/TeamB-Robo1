@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <CAN.h>
+#include <ESP32Servo.h>
 #include <PS4Controller.h>
 
 const int WHEELBASE_X = 1;
@@ -10,6 +11,14 @@ const unsigned int ID = 0x555; // ID
 unsigned long long data;
 
 uint8_t canData[8];
+
+const uint8_t LAUNCHING_SERVO_PIN = 32;
+Servo launchingServo;
+bool launch_flag;
+
+const int SET_DEGREE = 0;      // 装填角度
+const int LAUNCH_DEGREE = 45;  // 発射角度
+const int DEBOUNCE_DELAY = 50; // チャタリング防止
 
 struct Motor_RPMs {
   int16_t frontLeft;
@@ -41,13 +50,14 @@ Motor_RPMs calculateWheelRPMs(int x, int y, int rotation) { // メカナムの�
 }
 
 void setup() {
+  launchingServo.attach(LAUNCHING_SERVO_PIN);
+  launchingServo.write(0);
+  launch_flag = false; // サーボのロック状態
+
   Serial.begin(115200);
   if (!CAN.begin(1000E3)) {
     Serial.println("ERROR:Starting CAN failed!");
-    while (1)
-      ;
   }
-
   PS4.begin("08:B6:1F:ED:5E:34");
 }
 
@@ -56,6 +66,23 @@ void loop() {
   if (!PS4.isConnected()) {
     Serial.println("ERROR:Cant PS4Connect!!");
     return;
+  }
+  static bool circle_pressed = false;
+  static unsigned long circle_debounce_time = 0;
+
+  if (PS4.Circle()) {
+    if (!circle_pressed && millis() - circle_debounce_time > DEBOUNCE_DELAY) {
+      if (!launch_flag) {
+        launchingServo.write(LAUNCH_DEGREE);
+      } else {
+        launchingServo.write(SET_DEGREE);
+      }
+      launch_flag = !launch_flag;
+      circle_debounce_time = millis();
+    }
+    circle_pressed = true;
+  } else {
+    circle_pressed = false;
   }
 
   int left_x = PS4.LStickX();
@@ -74,7 +101,7 @@ void loop() {
   }
 
   Motor_RPMs RPMs;
-
+  
   RPMs = calculateWheelRPMs(left_x, left_y, right_x);
   data = combineMotorRPMs(RPMs);
 
