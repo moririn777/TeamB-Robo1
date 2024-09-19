@@ -91,6 +91,4 @@ void loop() {
   CAN.beginPacket(ID);
   CAN.write(canData, sizeof(canData));
   CAN.endPacket();
-
-  delay(10);
 }
