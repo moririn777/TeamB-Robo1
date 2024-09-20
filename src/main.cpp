@@ -14,7 +14,7 @@ const int32_t DEBOUNCE_DELAY = 50; // チャタリング防止
 
 bool circle_pressed = false;
 uint32_t circle_debounce_time = 0;
-uint8_t canData[8];
+uint8_t can_data[8];
 Servo launchingServo;
 bool launch_flag;
 
@@ -50,19 +50,19 @@ class MotorRpms {
     int16_t rear_right;
 };
 
-uint64_t combineMotorRPMs(MotorRpms RPMs) {
-  uint64_t RPMdata = 0;
+uint64_t combineMotorRpms(MotorRpms rpms) {
+  uint64_t rpm_data = 0;
 
   // 各モーターの RPM 値をシフトして結合（16ビットに制限）
-  RPMdata |= (uint64_t)RPMs.frontLeft() << 48;
-  RPMdata |= (uint64_t)RPMs.frontRight() << 32;
-  RPMdata |= (uint64_t)RPMs.rearLeft() << 16;
-  RPMdata |= (uint64_t)RPMs.rearRight();
+  rpm_data |= (uint64_t)rpms.frontLeft() << 48;
+  rpm_data |= (uint64_t)rpms.frontRight() << 32;
+  rpm_data |= (uint64_t)rpms.rearLeft() << 16;
+  rpm_data |= (uint64_t)rpms.rearRight();
 
-  return RPMdata;
+  return rpm_data;
 }
 
-MotorRpms calculateWheelRPMs(int8_t x, int8_t y, int8_t rotation) { // メカナムの計算
+MotorRpms calculateWheelRpms(int8_t x, int8_t y, int8_t rotation) { // メカナムの計算
   int16_t front_left = -x + y + (WHEELBASE_X + WHEELBASE_Y) * rotation;
   int16_t front_right = x + y + (WHEELBASE_X + WHEELBASE_Y) * rotation;
   int16_t rear_left = -x - y + (WHEELBASE_X + WHEELBASE_Y) * rotation;
@@ -119,20 +119,20 @@ void loop() {
     right_x = 0;
   }
   
-  MotorRpms RPMs = calculateWheelRPMs(left_x, left_y, right_x);
-  uint64_t data = combineMotorRPMs(RPMs);
+  MotorRpms rpms = calculateWheelRpms(left_x, left_y, right_x);
+  uint64_t data = combineMotorRpms(rpms);
 
   Serial.printf("data: 0x%016llX\r\n", data);
-  Serial.printf("FL::%x\r\n", uint16_t(RPMs.frontLeft()));
-  Serial.printf("FR::%X\r\n", uint16_t(RPMs.frontRight()));
-  Serial.printf("RL::%X\r\n", uint16_t(RPMs.rearLeft()));
-  Serial.printf("RR::%X\r\n", uint16_t(RPMs.rearRight()));
+  Serial.printf("FL::%x\r\n", uint16_t(rpms.frontLeft()));
+  Serial.printf("FR::%X\r\n", uint16_t(rpms.frontRight()));
+  Serial.printf("RL::%X\r\n", uint16_t(rpms.rearLeft()));
+  Serial.printf("RR::%X\r\n", uint16_t(rpms.rearRight()));
 
   for (int i = 0; i < 8; i++) {
-    canData[i] = (data >> (56 - i * 8)) & 0xFF;
+    can_data[i] = (data >> (56 - i * 8)) & 0xFF;
   }
 
   CAN.beginPacket(ID);
-  CAN.write(canData, sizeof(canData));
+  CAN.write(can_data, sizeof(can_data));
   CAN.endPacket();
 }
