@@ -8,7 +8,6 @@ const int32_t WHEELBASE_Y = 1;
 const int32_t DEAD_ZONE = 30;
 
 const uint32_t ID = 0x555; // ID
-uint64_t data;
 bool circle_pressed = false;
 uint32_t circle_debounce_time = 0;
 uint8_t canData[8];
@@ -123,7 +122,7 @@ void loop() {
   }
   
   MotorRpms RPMs = calculateWheelRPMs(left_x, left_y, right_x);
-  data = combineMotorRPMs(RPMs);
+  uint64_t data = combineMotorRPMs(RPMs);
 
   Serial.printf("data: 0x%016llX\r\n", data);
   Serial.printf("FL::%x\r\n", uint16_t(RPMs.frontLeft()));
