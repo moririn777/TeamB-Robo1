@@ -59,26 +59,24 @@ class MotorRpms {
     int16_t rear_right;
 };
 
-unsigned long long combineMotorRPMs(Motor_RPMs RPMs) {
+unsigned long long combineMotorRPMs(MotorRpms RPMs) {
   unsigned long long RPMdata = 0;
 
   // 各モーターの RPM 値をシフトして結合（16ビットに制限）
-  RPMdata |= ((unsigned long long)((uint16_t)RPMs.frontLeft) << 48);
-  RPMdata |= ((unsigned long long)((uint16_t)RPMs.frontRight) << 32);
-  RPMdata |= ((unsigned long long)((uint16_t)RPMs.rearLeft) << 16);
-  RPMdata |= (unsigned long long)((uint16_t)RPMs.rearRight);
+  RPMdata |= (unsigned long long)RPMs.frontLeft() << 48;
+  RPMdata |= (unsigned long long)RPMs.frontRight() << 32;
+  RPMdata |= (unsigned long long)RPMs.rearLeft() << 16;
+  RPMdata |= (unsigned long long)RPMs.rearRight();
 
   return RPMdata;
 }
 
-Motor_RPMs calculateWheelRPMs(int x, int y, int rotation) { // メカナムの計算
-  Motor_RPMs RPMs;
-
-  RPMs.frontLeft = (int16_t)(-x + y + (WHEELBASE_X + WHEELBASE_Y) * rotation);
-  RPMs.frontRight = (int16_t)(x + y + (WHEELBASE_X + WHEELBASE_Y) * rotation);
-  RPMs.rearLeft = (int16_t)(-x - y + (WHEELBASE_X + WHEELBASE_Y) * rotation);
-  RPMs.rearRight = (int16_t)(x - y + (WHEELBASE_X + WHEELBASE_Y) * rotation);
-  return RPMs;
+MotorRpms calculateWheelRPMs(int x, int y, int rotation) { // メカナムの計算
+  int16_t front_left = -x + y + (WHEELBASE_X + WHEELBASE_Y) * rotation;
+  int16_t front_right = x + y + (WHEELBASE_X + WHEELBASE_Y) * rotation;
+  int16_t rear_left = -x - y + (WHEELBASE_X + WHEELBASE_Y) * rotation;
+  int16_t rear_right = x - y + (WHEELBASE_X + WHEELBASE_Y) * rotation;
+  return MotorRpms(front_left, front_right, rear_left, rear_right);
 }
 
 void setup() {
@@ -131,17 +129,15 @@ void loop() {
   if (abs(right_x) < DEAD_ZONE) {
     right_x = 0;
   }
-
-  Motor_RPMs RPMs;
   
-  RPMs = calculateWheelRPMs(left_x, left_y, right_x);
+  MotorRpms RPMs = calculateWheelRPMs(left_x, left_y, right_x);
   data = combineMotorRPMs(RPMs);
 
   Serial.printf("data: 0x%016llX\r\n", data);
-  Serial.printf("FL::%x\r\n", uint16_t(RPMs.frontLeft));
-  Serial.printf("FR::%X\r\n", uint16_t(RPMs.frontRight));
-  Serial.printf("RL::%X\r\n", uint16_t(RPMs.rearLeft));
-  Serial.printf("RR::%X\r\n", uint16_t(RPMs.rearRight));
+  Serial.printf("FL::%x\r\n", uint16_t(RPMs.frontLeft()));
+  Serial.printf("FR::%X\r\n", uint16_t(RPMs.frontRight()));
+  Serial.printf("RL::%X\r\n", uint16_t(RPMs.rearLeft()));
+  Serial.printf("RR::%X\r\n", uint16_t(RPMs.rearRight()));
 
   for (int i = 0; i < 8; i++) {
     canData[i] = (data >> (56 - i * 8)) & 0xFF;
