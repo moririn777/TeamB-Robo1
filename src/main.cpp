@@ -21,13 +21,6 @@ const int32_t SET_DEGREE = 0;      // 装填角度
 const int32_t LAUNCH_DEGREE = 45;  // 発射角度
 const int32_t DEBOUNCE_DELAY = 50; // チャタリング防止
 
-struct Motor_RPMs {
-  int16_t frontLeft;
-  int16_t frontRight;
-  int16_t rearLeft;
-  int16_t rearRight;
-};
-
 class MotorRpms {
   public:
     MotorRpms(
