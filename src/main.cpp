@@ -3,12 +3,12 @@
 #include <ESP32Servo.h>
 #include <PS4Controller.h>
 
-const int WHEELBASE_X = 1;
-const int WHEELBASE_Y = 1;
-const int DEAD_ZONE = 30;
+const int32_t WHEELBASE_X = 1;
+const int32_t WHEELBASE_Y = 1;
+const int32_t DEAD_ZONE = 30;
 
-const unsigned int ID = 0x555; // ID
-unsigned long long data;
+const uint32_t ID = 0x555; // ID
+uint64_t data;
 
 uint8_t canData[8];
 
@@ -16,9 +16,9 @@ const uint8_t LAUNCHING_SERVO_PIN = 32;
 Servo launchingServo;
 bool launch_flag;
 
-const int SET_DEGREE = 0;      // 装填角度
-const int LAUNCH_DEGREE = 45;  // 発射角度
-const int DEBOUNCE_DELAY = 50; // チャタリング防止
+const int32_t SET_DEGREE = 0;      // 装填角度
+const int32_t LAUNCH_DEGREE = 45;  // 発射角度
+const int32_t DEBOUNCE_DELAY = 50; // チャタリング防止
 
 struct Motor_RPMs {
   int16_t frontLeft;
@@ -60,18 +60,18 @@ class MotorRpms {
 };
 
 unsigned long long combineMotorRPMs(MotorRpms RPMs) {
-  unsigned long long RPMdata = 0;
+  uint64_t RPMdata = 0;
 
   // 各モーターの RPM 値をシフトして結合（16ビットに制限）
-  RPMdata |= (unsigned long long)RPMs.frontLeft() << 48;
-  RPMdata |= (unsigned long long)RPMs.frontRight() << 32;
-  RPMdata |= (unsigned long long)RPMs.rearLeft() << 16;
-  RPMdata |= (unsigned long long)RPMs.rearRight();
+  RPMdata |= (uint64_t)RPMs.frontLeft() << 48;
+  RPMdata |= (uint64_t)RPMs.frontRight() << 32;
+  RPMdata |= (uint64_t)RPMs.rearLeft() << 16;
+  RPMdata |= (uint64_t)RPMs.rearRight();
 
   return RPMdata;
 }
 
-MotorRpms calculateWheelRPMs(int x, int y, int rotation) { // メカナムの計算
+MotorRpms calculateWheelRPMs(int8_t x, int8_t y, int8_t rotation) { // メカナムの計算
   int16_t front_left = -x + y + (WHEELBASE_X + WHEELBASE_Y) * rotation;
   int16_t front_right = x + y + (WHEELBASE_X + WHEELBASE_Y) * rotation;
   int16_t rear_left = -x - y + (WHEELBASE_X + WHEELBASE_Y) * rotation;
@@ -98,7 +98,7 @@ void loop() {
     return;
   }
   static bool circle_pressed = false;
-  static unsigned long circle_debounce_time = 0;
+  static uint32_t circle_debounce_time = 0;
 
   if (PS4.Circle()) {
     if (!circle_pressed && millis() - circle_debounce_time > DEBOUNCE_DELAY) {
@@ -115,10 +115,10 @@ void loop() {
     circle_pressed = false;
   }
 
-  int left_x = PS4.LStickX();
-  int left_y = PS4.LStickY();
-  int right_x = PS4.RStickX();
-  // int left_y = PS4.LStickY();
+  int8_t left_x = PS4.LStickX();
+  int8_t left_y = PS4.LStickY();
+  int8_t right_x = PS4.RStickX();
+  // int8_t left_y = PS4.LStickY();
   
   if (abs(left_x) < DEAD_ZONE) {
     left_x = 0;
