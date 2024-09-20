@@ -6,19 +6,17 @@
 const int32_t WHEELBASE_X = 1;
 const int32_t WHEELBASE_Y = 1;
 const int32_t DEAD_ZONE = 30;
-
-const uint32_t ID = 0x555; // ID
-bool circle_pressed = false;
-uint32_t circle_debounce_time = 0;
-uint8_t canData[8];
-
 const uint8_t LAUNCHING_SERVO_PIN = 32;
-Servo launchingServo;
-bool launch_flag;
-
+const uint32_t ID = 0x555; // ID
 const int32_t SET_DEGREE = 0;      // 装填角度
 const int32_t LAUNCH_DEGREE = 45;  // 発射角度
 const int32_t DEBOUNCE_DELAY = 50; // チャタリング防止
+
+bool circle_pressed = false;
+uint32_t circle_debounce_time = 0;
+uint8_t canData[8];
+Servo launchingServo;
+bool launch_flag;
 
 class MotorRpms {
   public:
