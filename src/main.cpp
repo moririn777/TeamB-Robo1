@@ -9,7 +9,8 @@ const int32_t DEAD_ZONE = 30;
 
 const uint32_t ID = 0x555; // ID
 uint64_t data;
-
+bool circle_pressed = false;
+uint32_t circle_debounce_time = 0;
 uint8_t canData[8];
 
 const uint8_t LAUNCHING_SERVO_PIN = 32;
@@ -59,7 +60,7 @@ class MotorRpms {
     int16_t rear_right;
 };
 
-unsigned long long combineMotorRPMs(MotorRpms RPMs) {
+uint64_t combineMotorRPMs(MotorRpms RPMs) {
   uint64_t RPMdata = 0;
 
   // 各モーターの RPM 値をシフトして結合（16ビットに制限）
@@ -97,8 +98,6 @@ void loop() {
     Serial.println("ERROR:Cant PS4Connect!!");
     return;
   }
-  static bool circle_pressed = false;
-  static uint32_t circle_debounce_time = 0;
 
   if (PS4.Circle()) {
     if (!circle_pressed && millis() - circle_debounce_time > DEBOUNCE_DELAY) {
