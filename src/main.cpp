@@ -50,14 +50,14 @@ class MotorRpms {
     int16_t rear_right;
 };
 
-uint64_t combineMotorRpms(MotorRpms rpms) {
+uint64_t combineMotorRpms(MotorRpms *rpms) {
   uint64_t rpm_data = 0;
 
   // 各モーターの RPM 値をシフトして結合（16ビットに制限）
-  rpm_data |= (uint64_t)rpms.frontLeft() << 48;
-  rpm_data |= (uint64_t)rpms.frontRight() << 32;
-  rpm_data |= (uint64_t)rpms.rearLeft() << 16;
-  rpm_data |= (uint64_t)rpms.rearRight();
+  rpm_data |= (uint64_t)rpms->frontLeft() << 48;
+  rpm_data |= (uint64_t)rpms->frontRight() << 32;
+  rpm_data |= (uint64_t)rpms->rearLeft() << 16;
+  rpm_data |= (uint64_t)rpms->rearRight();
 
   return rpm_data;
 }
@@ -120,7 +120,7 @@ void loop() {
   }
   
   MotorRpms rpms = calculateWheelRpms(left_x, left_y, right_x);
-  uint64_t data = combineMotorRpms(rpms);
+  uint64_t data = combineMotorRpms(&rpms);
 
   Serial.printf("data: 0x%016llX\r\n", data);
   Serial.printf("FL::%x\r\n", uint16_t(rpms.frontLeft()));
