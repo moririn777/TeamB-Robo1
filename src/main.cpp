@@ -27,6 +27,38 @@ struct Motor_RPMs {
   int16_t rearRight;
 };
 
+class MotorRpms {
+  public:
+    MotorRpms(
+      int16_t front_left,
+      int16_t front_right,
+      int16_t rear_left,
+      int16_t rear_right
+    ) {
+      this->front_left = front_left;
+      this->front_right = front_right;
+      this->rear_left = rear_left;
+      this->rear_right = rear_right;
+    }
+    int16_t frontLeft() {
+      return this->front_left;
+    }
+    int16_t frontRight() {
+      return this->front_right;
+    }
+    int16_t rearLeft() {
+      return this->rear_left;
+    }
+    int16_t rearRight() {
+      return this->rear_right;
+    }
+  private:
+    int16_t front_left;
+    int16_t front_right;
+    int16_t rear_left;
+    int16_t rear_right;
+};
+
 unsigned long long combineMotorRPMs(Motor_RPMs RPMs) {
   unsigned long long RPMdata = 0;
 
